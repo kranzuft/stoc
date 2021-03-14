@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go build solaris sparc 32" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="lofty" />
+    <working_directory value="$PROJECT_DIR$" />
+    <envs>
+      <env name="GOOS" value="solaris" />
+      <env name="GOARCH" value="sparc" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="lofty/cmd/main" />
+    <directory value="$PROJECT_DIR$" />
+    <output_directory value="$PROJECT_DIR$/bin/solaris/sparc/32" />
+    <option name="run" value="false" />
+    <method v="2" />
+  </configuration>
+</component>
