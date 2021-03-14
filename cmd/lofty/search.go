@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func searchPipeMode() {
+func SearchPipeMode() {
 	reader := bufio.NewReader(os.Stdin)
 	command := strings.Join(os.Args[1:], " ")
 	cont := true
