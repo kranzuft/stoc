@@ -1,10 +1,10 @@
-package lofty
+package input
 
 import (
 	"os"
 )
 
-func isPiping() bool {
+func IsPiping() bool {
 	info, err := os.Stdin.Stat()
 	if err != nil {
 		return false

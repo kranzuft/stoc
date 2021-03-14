@@ -1,6 +1,8 @@
-package lofty
+package main
 
 import (
+	"lofty/cmd/input"
+	"lofty/cmd/lofty"
 	"os"
 )
 
@@ -9,7 +11,7 @@ func main() {
 	//                0123456789012345678901234567890123456789012345678901234567890
 	//                ((100000+(2+3)+4)-5+((6+7)+8)+9)
 	//                (((1+2-3+4)+1)-2)
-	if isPiping() && len(os.Args) > 1 {
-		searchPipeMode()
+	if input.IsPiping() && len(os.Args) > 1 {
+		lofty.SearchPipeMode()
 	}
 }
