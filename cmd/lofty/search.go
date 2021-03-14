@@ -33,7 +33,7 @@ func splitAndSearch(command string, target string, sep string) bool {
 func SearchString(command string, target string) bool {
 	var raw = []rune(command)
 
-	lexSuccess, tokens := parseBooleanAlgebraToTokens(raw)
+	lexSuccess, tokens := booleanAlgebraLexer(raw)
 
 	if lexSuccess {
 		shuntingSuccess, result := tokenShuntingAlgorithm(tokens)
