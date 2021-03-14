@@ -45,47 +45,48 @@ type parsedTokens struct {
 // exit.
 
 func tokenShuntingAlgorithm(toks []token) (bool, []token) {
-	var pt parsedTokens
+	var parsed   []token
+	var operator []token
 	for _, tok := range toks {
 		// This implementation does not implement composite functions, functions with variable number of arguments,
-		// and unary pt.operators.
-		if tok.typ == EXP {
-			pt.parsed = append(pt.parsed, tok)
-		} else if isAssociative(tok.typ) {
-			for len(pt.operator) > 0 && isLeftAssociative(end(pt.operator).typ) {
-				pt.parsed, pt.operator = moveEnd(pt.parsed, pt.operator)
+		// and unary operators.
+		if tok.typ == EXP || tok.typ == TRUE {
+			parsed = append(parsed, tok)
+		} else if isOp(tok.typ) {
+			for len(operator) > 0 && (isLeftAssociative(end(operator).typ) || isComplexOp(end(operator).typ)) {
+				parsed, operator = moveEnd(parsed, operator)
 			}
-			pt.operator = append(pt.operator, tok)
+			operator = append(operator, tok)
 		} else if tok.typ == LBR {
-			pt.operator = append(pt.operator, tok)
+			operator = append(operator, tok)
 		} else if tok.typ == RBR {
-			for len(pt.operator) > 0 && pt.operator[len(pt.operator)-1].typ != LBR {
-				pt.parsed, pt.operator = moveEnd(pt.parsed, pt.operator)
+			for len(operator) > 0 && operator[len(operator)-1].typ != LBR {
+				parsed, operator = moveEnd(parsed, operator)
 			}
 
 			// If the stack runs out without finding a left parenthesis, then there are mismatched parentheses.
-			if len(pt.operator) == 0 {
-				return false, pt.parsed
-			} else if pt.operator[len(pt.operator)-1].typ == LBR {
-				pt.operator = pt.operator[:endIndex(pt.operator)]
+			if len(operator) == 0 {
+				return false, parsed
+			} else if operator[len(operator)-1].typ == LBR {
+				operator = operator[:endIndex(operator)]
 			}
 		}
 	}
 
-	// After while loop, add every pt.operator to output queue
+	// After while loop, add every operator to output queue
 	// (didn't bother popping from stack, just read array from back)
-	for i, _ := range pt.operator {
-		opI := pt.operator[len(pt.operator)-1-i] // reverse because this is a stack
-		// If the pt.operator token on the top of the stack is a parenthesis, then there are mismatched parentheses.
+	for i, _ := range operator {
+		opI := operator[len(operator)-1-i] // reverse because this is a stack
+		// If the operator token on the top of the stack is a parenthesis, then there are mismatched parentheses.
 		if opI.typ == LBR || opI.typ == RBR {
-			return false, pt.parsed
+			return false, parsed
 		}
-		pt.parsed = append(pt.parsed, opI)
+		parsed = append(parsed, opI)
 	}
 
-	fmt.Println(toString(pt.parsed))
+	fmt.Println(tokensToString(parsed))
 
-	return true, pt.parsed
+	return true, parsed
 }
 
 func searchPostfixTokens(search []token, target string) bool {
@@ -101,13 +102,24 @@ func searchPostfixTokens(search []token, target string) bool {
 			res := stack[len(stack)-2] || stack[len(stack)-1]
 			stack[len(stack)-2] = res
 			stack = stack[:len(stack)-1]
+		case ANDNOT:
+			res := stack[len(stack)-2] && !stack[len(stack)-1]
+			stack[len(stack)-2] = res
+			stack = stack[:len(stack)-1]
+		case ORNOT:
+			res := stack[len(stack)-2] || !stack[len(stack)-1]
+			stack[len(stack)-2] = res
+			stack = stack[:len(stack)-1]
 		default:
 			// action = "Push num onto top of stack"
-			stack = append(stack, strings.Contains(target, tok.exp))
+			if tok.typ != TRUE {
+				stack = append(stack, strings.Contains(target, tok.exp))
+			} else {
+				stack = append(stack, true)
+			}
 		}
 		// fmt.Printf("%3s    %-26s  %v\n", tok, action, stack)
 	}
-
 
 	return stack[0]
 }

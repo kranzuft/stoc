@@ -17,12 +17,22 @@ const (
 	OK
 )
 
-func parseBooleanAlgebraToTokens(raw []rune) (bool, []token) {
+// booleanAlgebraLexer looks for boolean operations in the search text, and transforms the operations into a token list.
+//
+// If an unexpected token type comes up, outside the expected order, false is returned. In this situation, a message
+// is shown showing where in the line the exception occurred, with a descriptive message included that states what
+// was expected.
+//
+func booleanAlgebraLexer(raw []rune) (bool, []token) {
 	var tokens []token
 	var token token
 
+	if len(raw) == 0 {
+		return false, tokens
+	}
+
 	index := skipWhitespace(raw, 0)
-	for state := expressionOrLeftBracket; state != nil; {
+	for state := determineIfExpressionOrLeftBracketOrNot; state != nil; {
 		index, token, state = state(raw, index)
 		if token.typ == UNKNOWN {
 			return false, tokens
@@ -30,7 +40,7 @@ func parseBooleanAlgebraToTokens(raw []rune) (bool, []token) {
 		tokens = append(tokens, token)
 	}
 
-	fmt.Println(toString(tokens))
+	fmt.Println(tokensToString(tokens))
 
 	return true, tokens
 }
@@ -47,12 +57,15 @@ func lexLeftBracket(rawData []rune, index int) (int, token, stateFn) {
 			return i, tok, lexExpression
 		} else if isLeftBracket(rawData[i]) {
 			return i, tok, lexLeftBracket
+		} else if isNot(rawData[i]) {
+			return i, tok, lexNotSymbolAndCreateTrueToken
 		}
 	}
 
 	return printError(rawData, i, EXP)
 }
 
+// Lexical right bracket
 func lexRightBracket(rawData []rune, index int) (int, token, stateFn) {
 	var tok token
 	tok.typ = RBR // we don't need to track that it's a right bracket anymore
@@ -97,6 +110,7 @@ func lexExpression(rawData []rune, index int) (int, token, stateFn) {
 			return printError(rawData, i, EXP)
 		}
 	}
+
 	if i == len(rawData) && i > 0 && isExpRune(rawData[i-1]) {
 		tok.exp = string(rawData[lastI : i-trailingWhitespace])
 	} else {
@@ -117,32 +131,57 @@ func lexExpression(rawData []rune, index int) (int, token, stateFn) {
 	return i, tok, nil
 }
 
+func getNextFuncAfterOperator(rawData []rune, index int, tok token) (int, token, stateFn) {
+	if index < len(rawData) {
+		if isExpRune(rawData[index]) {
+			return index, tok, lexExpression
+		} else if isLeftBracket(rawData[index]) {
+			return index, tok, lexLeftBracket
+		}
+	}
+
+	return printError(rawData, index+1, EXP, LBR)
+}
+
+func lexNotSymbolAndCreateTrueToken(rawData []rune, index int) (int, token, stateFn) {
+	var tok token
+
+	tok.typ = TRUE
+	tok.exp = "true"
+
+	return index, tok, lexNotSymbolAndCreateAndNotToken
+}
+
+func lexNotSymbolAndCreateAndNotToken(rawData []rune, index int) (int, token, stateFn) {
+	var tok token
+
+	tok.typ = ANDNOT
+	tok.exp = "&!"
+
+	i := skipWhitespace(rawData, index+1)
+
+	return getNextFuncAfterOperator(rawData, i, tok)
+}
+
 func lexOperator(rawData []rune, index int) (int, token, stateFn) {
 	var tok token
 
-	//if index+1 < len(rawData) {
-	//	tok.typ = determineTokenType(rawData[index], rawData[index+1])
-	//	tok.exp = string(rawData[index])
-	//	if isComplexOp(tok.typ) {
-	//		tok.exp += string(rawData[index+1])
-	//		index++
-	//	}
-	//} else
-	if index < len(rawData) {
+	i1 := index
+	i2 := skipWhitespace(rawData, i1+1)
+	if i2 < len(rawData) {
+		tok.typ = determineTokenType(rawData[i1], rawData[i2])
+		tok.exp = string(rawData[index])
+		if isComplexOp(tok.typ) {
+			tok.exp += string(rawData[i2])
+			index = i2
+		}
+	} else if i1 < len(rawData) {
 		tok.typ = determineTokenType(rawData[index], ' ')
 		tok.exp = string(rawData[index])
 	}
 	i := skipWhitespace(rawData, index+1)
 
-	if i < len(rawData) {
-		if isExpRune(rawData[i]) {
-			return i, tok, lexExpression
-		} else if isLeftBracket(rawData[i]) {
-			return i, tok, lexLeftBracket
-		}
-	}
-
-	return printError(rawData, index+1, EXP, LBR)
+	return getNextFuncAfterOperator(rawData, i, tok)
 }
 
 func (t tokenType) in(toks []tokenType) bool {
@@ -184,7 +223,7 @@ func ifStr(yes bool, str1 string, str2 string) string {
 func printError(rawData []rune, index int, expected ...tokenType) (int, token, stateFn) {
 	var found tokenType
 	index = skipWhitespace(rawData, index)
-	if (index+1) < len(rawData) {
+	if (index + 1) < len(rawData) {
 		found = determineTokenType(rawData[index], rawData[index+1])
 	} else if index < len(rawData) {
 		found = determineTokenType(rawData[index], ' ')
@@ -197,12 +236,14 @@ func printError(rawData []rune, index int, expected ...tokenType) (int, token, s
 
 func errorMessage(rawData []rune, index int, message string) (int, token, stateFn) {
 	fmt.Println("ERROR: " + message)
-	lenIndexDiff := len(rawData) - index
-	start := int(math.Min(20, float64(index)))
-	end := int(math.Min(20, float64(lenIndexDiff)))
-	fmt.Println(string(rawData[index-start : index+end]))
-	fmt.Println(strings.Repeat(" ", start) + "^")
-	debug.PrintStack()
+	if len(rawData) > 0 {
+		lenIndexDiff := len(rawData) - index
+		start := int(math.Min(20, float64(index)))
+		end := int(math.Min(20, float64(lenIndexDiff)))
+		fmt.Println(string(rawData[index-start : index+end]))
+		fmt.Println(strings.Repeat(" ", start) + "^")
+		debug.PrintStack()
+	}
 	return index, getErrorToken(), nil
 }
 
@@ -218,11 +259,13 @@ func skipWhitespace(rawData []rune, index int) int {
 	return i
 }
 
-func expressionOrLeftBracket(rawData []rune, index int) (int, token, stateFn) {
+func determineIfExpressionOrLeftBracketOrNot(rawData []rune, index int) (int, token, stateFn) {
 	if isLeftBracket(rawData[index]) {
 		return lexLeftBracket(rawData, index)
 	} else if isExpRune(rawData[index]) {
 		return lexExpression(rawData, index)
+	} else if isNot(rawData[index]) {
+		return lexNotSymbolAndCreateTrueToken(rawData, index)
 	}
 
 	return printError(rawData, index, LBR, EXP)

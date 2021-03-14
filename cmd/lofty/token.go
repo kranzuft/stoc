@@ -7,11 +7,13 @@ const (
 	UNKNOWN tokenType = "UNKNOWN" // ignore first value
 	AND     tokenType = "AND"
 	OR      tokenType = "OR"
-	ANDNOT     tokenType = "ANDNOT"
-	ORNOT      tokenType = "ORNOT"
+	ANDNOT  tokenType = "ANDNOT"
+	ORNOT   tokenType = "ORNOT"
 	EXP     tokenType = "EXPRESSION"
 	LBR     tokenType = "LEFT_BRACKET"
 	RBR     tokenType = "RIGHT_BRACKET"
+	TRUE    tokenType = "TRUE"
+	FALSE   tokenType = "FALSE"
 )
 
 type token struct {
@@ -19,10 +21,10 @@ type token struct {
 	exp string
 }
 
-func toString(toks []token) string {
+func tokensToString(toks []token) string {
 	s := ""
 	for _, r := range toks {
-		s+= r.exp + " "
+		s += r.exp + " "
 	}
 	return s
 }
@@ -41,6 +43,10 @@ func (t *tokenType) toString() string {
 		return "right bracket"
 	case EXP:
 		return "expression"
+	case TRUE:
+		return "true"
+	case FALSE:
+		return "false"
 	case EOL:
 		return "end of line"
 	default:
@@ -57,8 +63,9 @@ func isAssociative(tok tokenType) bool {
 }
 
 func isOp(tok tokenType) bool {
-	return tok == AND || tok == OR
+	return tok == AND || tok == OR || isComplexOp(tok)
 }
+
 func isComplexOp(tok tokenType) bool {
 	return tok == ANDNOT || tok == ORNOT
 }
