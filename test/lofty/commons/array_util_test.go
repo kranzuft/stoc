@@ -1,0 +1,72 @@
+package commons
+
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"lofty/cmd/lofty/commons"
+	"lofty/cmd/lofty/types"
+	"testing"
+)
+
+/**
+ * Init function
+ */
+func TestArrayUtil(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "CommonsArrayUtil")
+}
+
+var T_LBR = types.Token{Typ: types.LBR, Exp: "("}
+var T_RBR = types.Token{Typ: types.RBR, Exp: ")"}
+var T_AND = types.Token{Typ: types.AND, Exp: "&"}
+var T_OR = types.Token{Typ: types.OR, Exp: "|"}
+
+var _ = Describe("ArrayUtil tests", func() {
+	// LastIndexOf tests
+	Describe("LastIndexOf tests", func() {
+		// small unique items integer array tests last index
+		Describe("an int value item", func() {
+			Context("against a small integer array of unique items", func() {
+				It("should return the index of the integer in the array", func() {
+					Expect(commons.LastIndexOf([]int{1, 2, 3, 4, 5}, func(t int) bool { return t == 1 })).To(Equal(0))
+					Expect(commons.LastIndexOf([]int{1, 2, 3, 4, 5}, func(t int) bool { return t == 5 })).To(Equal(4))
+					Expect(commons.LastIndexOf([]int{1, 2, 3, 4, 5}, func(t int) bool { return t == 3 })).To(Equal(2))
+					Expect(commons.LastIndexOf([]int{1, 2, 3, 4, 5}, func(t int) bool { return t == 10 })).To(Equal(-1))
+				})
+			})
+		})
+
+		// small repeated items integer array tests last index
+		Describe("an int value item", func() {
+			Context("against a small integer array of repeated items", func() {
+				It("should return the last index of the integer in the array", func() {
+					Expect(commons.LastIndexOf([]int{1, 2, 3, 4, 5, 1, 2, 3, 4, 5}, func(t int) bool { return t == 1 })).To(Equal(5))
+					Expect(commons.LastIndexOf([]int{1, 2, 3, 4, 5, 1, 2, 3, 4, 5}, func(t int) bool { return t == 5 })).To(Equal(9))
+					Expect(commons.LastIndexOf([]int{1, 2, 3, 4, 5, 1, 2, 3, 4, 5}, func(t int) bool { return t == 3 })).To(Equal(7))
+					Expect(commons.LastIndexOf([]int{1, 2, 3, 4, 5, 1, 2, 3, 4, 5}, func(t int) bool { return t == 10 })).To(Equal(-1))
+				})
+			})
+		})
+
+		// small repeated items string array tests last index
+		Describe("a string value item", func() {
+			Context("against a small string array of repeated items", func() {
+				It("should return the last index of the string in the array", func() {
+					Expect(commons.LastIndexOf([]string{"a", "b", "c", "d", "e", "a", "b", "c", "d", "e"}, func(t string) bool { return t == "a" })).To(Equal(5))
+					Expect(commons.LastIndexOf([]string{"a", "b", "c", "d", "e", "a", "b", "c", "d", "e"}, func(t string) bool { return t == "e" })).To(Equal(9))
+					Expect(commons.LastIndexOf([]string{"a", "b", "c", "d", "e", "a", "b", "c", "d", "e"}, func(t string) bool { return t == "f" })).To(Equal(-1))
+				})
+			})
+		})
+
+		// small repeated items token array tests last index
+		Describe("a token value item", func() {
+			Context("against a small token array of repeated items", func() {
+				It("should return the last index of the token in the array", func() {
+					Expect(commons.LastIndexOf([]types.Token{T_LBR, T_RBR, T_AND, T_OR, T_AND, T_OR}, func(t types.Token) bool { return t.Typ == types.AND })).To(Equal(4))
+					Expect(commons.LastIndexOf([]types.Token{T_LBR, T_RBR, T_AND, T_OR, T_AND, T_OR}, func(t types.Token) bool { return t.Typ == types.OR })).To(Equal(5))
+				})
+			})
+		})
+	})
+})

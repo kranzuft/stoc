@@ -1,14 +1,11 @@
-package lofty
+package processing
 
 import (
-	"fmt"
+	"lofty/cmd/lofty/commons"
+	"lofty/cmd/lofty/search_error"
+	"lofty/cmd/lofty/types"
 	"strings"
 )
-
-type parsedTokens struct {
-	parsed   []token
-	operator []token
-}
 
 // Shunting algorithm, based on the mathematical implementation available on the shunting algorithm wiki page
 //
@@ -44,30 +41,31 @@ type parsedTokens struct {
 //         pop the operator from the operator stack onto the output queue.
 // exit.
 
-func tokenShuntingAlgorithm(toks []token) (bool, []token) {
-	var parsed   []token
-	var operator []token
-	for _, tok := range toks {
+func TokenShuntingAlgorithm(toks []types.Token) ([]types.Token, error) {
+	var parsed []types.Token
+	var operator []types.Token
+	for i, tok := range toks {
 		// This implementation does not implement composite functions, functions with variable number of arguments,
 		// and unary operators.
-		if tok.typ == EXP || tok.typ == TRUE {
+		if tok.Typ == types.EXP || tok.Typ == types.TRUE {
 			parsed = append(parsed, tok)
-		} else if isOp(tok.typ) {
-			for len(operator) > 0 && (isLeftAssociative(end(operator).typ) || isComplexOp(end(operator).typ)) {
+		} else if types.IsOp(tok.Typ) {
+			for len(operator) > 0 && (types.IsLeftAssociative(end(operator).Typ) || types.IsComplexOp(end(operator).Typ)) {
 				parsed, operator = moveEnd(parsed, operator)
 			}
 			operator = append(operator, tok)
-		} else if tok.typ == LBR {
+		} else if tok.Typ == types.LBR {
 			operator = append(operator, tok)
-		} else if tok.typ == RBR {
-			for len(operator) > 0 && operator[len(operator)-1].typ != LBR {
+		} else if tok.Typ == types.RBR {
+			// move all the operators to the parsed until we find a left bracket
+			for len(operator) > 0 && operator[len(operator)-1].Typ != types.LBR {
 				parsed, operator = moveEnd(parsed, operator)
 			}
 
 			// If the stack runs out without finding a left parenthesis, then there are mismatched parentheses.
 			if len(operator) == 0 {
-				return false, parsed
-			} else if operator[len(operator)-1].typ == LBR {
+				return parsed, search_error.New("shunting error, missing right bracket", search_error.MissingRightBracket, i)
+			} else if operator[len(operator)-1].Typ == types.LBR {
 				operator = operator[:endIndex(operator)]
 			}
 		}
@@ -75,50 +73,50 @@ func tokenShuntingAlgorithm(toks []token) (bool, []token) {
 
 	// After while loop, add every operator to output queue
 	// (didn't bother popping from stack, just read array from back)
-	for i, _ := range operator {
+	for i := range operator {
 		opI := operator[len(operator)-1-i] // reverse because this is a stack
 		// If the operator token on the top of the stack is a parenthesis, then there are mismatched parentheses.
-		if opI.typ == LBR || opI.typ == RBR {
-			return false, parsed
+		if opI.Typ == types.LBR || opI.Typ == types.RBR {
+			lastBR := commons.LastIndexOf(toks, func(t types.Token) bool {
+				return t.Typ == types.LBR || t.Typ == types.RBR
+			})
+			return parsed, search_error.New("shunting error, some brackets were not matched together", search_error.MismatchedBrackets, lastBR)
 		}
 		parsed = append(parsed, opI)
 	}
 
-	fmt.Println(tokensToString(parsed))
-
-	return true, parsed
+	return parsed, nil
 }
 
-func searchPostfixTokens(search []token, target string) bool {
+func SearchPostfixTokens(search []types.Token, target string) bool {
 	var stack []bool
 	for _, tok := range search {
 		// action := "Apply op to top of stack"
-		switch tok.typ {
-		case AND:
+		switch tok.Typ {
+		case types.AND:
 			res := stack[len(stack)-2] && stack[len(stack)-1]
 			stack[len(stack)-2] = res
 			stack = stack[:len(stack)-1]
-		case OR:
+		case types.OR:
 			res := stack[len(stack)-2] || stack[len(stack)-1]
 			stack[len(stack)-2] = res
 			stack = stack[:len(stack)-1]
-		case ANDNOT:
+		case types.ANDNOT:
 			res := stack[len(stack)-2] && !stack[len(stack)-1]
 			stack[len(stack)-2] = res
 			stack = stack[:len(stack)-1]
-		case ORNOT:
+		case types.ORNOT:
 			res := stack[len(stack)-2] || !stack[len(stack)-1]
 			stack[len(stack)-2] = res
 			stack = stack[:len(stack)-1]
 		default:
 			// action = "Push num onto top of stack"
-			if tok.typ != TRUE {
-				stack = append(stack, strings.Contains(target, tok.exp))
+			if tok.Typ != types.TRUE {
+				stack = append(stack, strings.Contains(target, tok.Exp))
 			} else {
 				stack = append(stack, true)
 			}
 		}
-		// fmt.Printf("%3s    %-26s  %v\n", tok, action, stack)
 	}
 
 	return stack[0]
@@ -128,22 +126,21 @@ func searchPostfixTokens(search []token, target string) bool {
  * Utility methods only used by shunting algorithm
  */
 
-func endIndex(tokens []token) int {
+func endIndex(tokens []types.Token) int {
 	return len(tokens) - 1
 }
 
-func end(tokens []token) token {
+func end(tokens []types.Token) types.Token {
 	return tokens[endIndex(tokens)]
 }
 
-func pop(tokens []token) (token, []token) {
+func pop(tokens []types.Token) (types.Token, []types.Token) {
 	tok := end(tokens)
 	return tok, tokens[:endIndex(tokens)]
 }
 
-func moveEnd(as []token, bs []token) ([]token, []token) {
+func moveEnd(as []types.Token, bs []types.Token) ([]types.Token, []types.Token) {
 	b, bs := pop(bs)
-	bs = bs
 	as = append(as, b)
 	return as, bs
 }

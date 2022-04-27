@@ -1,49 +1,21 @@
 package lofty
 
-import (
-	"bufio"
-	"fmt"
-	"io"
-	"os"
-	"strings"
-)
+import "lofty/cmd/lofty/processing"
 
-func SearchPipeMode() {
-	reader := bufio.NewReader(os.Stdin)
-	command := strings.Join(os.Args[1:], " ")
-	cont := true
-	for cont {
-		line, err := reader.ReadString('\n')
-		if err != nil && err == io.EOF {
-			cont = false
-		}
-		if SearchString(command, line) {
-			fmt.Println(strings.Trim(line, "\n"))
-		}
-	}
-}
-
-func splitAndSearch(command string, target string, sep string) bool {
-	for _, line := range strings.Split(target, sep) {
-		SearchString(command, line)
-	}
-	return true
-}
-
-func SearchString(command string, target string) bool {
+func SearchString(command string, target string) (bool, error) {
 	var raw = []rune(command)
 
-	lexSuccess, tokens := booleanAlgebraLexer(raw)
+	lexSuccess, tokens := processing.BooleanAlgebraLexer(raw)
 
 	if lexSuccess {
-		shuntingSuccess, result := tokenShuntingAlgorithm(tokens)
+		result, err := processing.TokenShuntingAlgorithm(tokens)
 
-		if shuntingSuccess {
-			return searchPostfixTokens(result, target)
+		if err == nil {
+			return processing.SearchPostfixTokens(result, target), err
 		} else {
-			fmt.Println("The calculation was not successful, check that you aren't missing a bracket")
+			return false, err
 		}
 	}
 
-	return false
+	return false, nil
 }
