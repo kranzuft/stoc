@@ -1,4 +1,4 @@
-package processing
+package lexer
 
 import (
 	"lofty/cmd/lofty/commons"
