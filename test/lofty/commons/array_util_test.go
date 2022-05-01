@@ -69,4 +69,36 @@ var _ = Describe("ArrayUtil tests", func() {
 			})
 		})
 	})
+
+	Describe("StartsWith test", func() {
+		Context("Test StartsWith with index 0", func() {
+			It("should return true", func() {
+				Expect(commons.StartsWith([]rune("12345"), 0, []rune("12345"))).To(Equal(true))
+			})
+			It("should return false", func() {
+				Expect(commons.StartsWith([]rune("123"), 0, []rune("12345"))).To(Equal(false))
+				Expect(commons.StartsWith([]rune("123567"), 0, []rune("12346"))).To(Equal(false))
+			})
+		})
+
+		Context("Test StartsWith with index middle", func() {
+			It("should return true", func() {
+				Expect(commons.StartsWith([]rune("12345"), 3, []rune("45"))).To(Equal(true))
+			})
+			It("should return false", func() {
+				Expect(commons.StartsWith([]rune("ABC123"), 3, []rune("12345"))).To(Equal(false))
+				Expect(commons.StartsWith([]rune("123567"), 3, []rune("467"))).To(Equal(false))
+			})
+		})
+
+		Context("Test StartsWith with index end", func() {
+			It("should return true", func() {
+				Expect(commons.StartsWith([]rune("12345"), 4, []rune("5"))).To(Equal(true))
+			})
+			It("should return false", func() {
+				Expect(commons.StartsWith([]rune("ABC123"), 6, []rune("3"))).To(Equal(false))
+				Expect(commons.StartsWith([]rune("123567"), 6, []rune("3"))).To(Equal(false))
+			})
+		})
+	})
 })

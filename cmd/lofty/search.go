@@ -1,17 +1,24 @@
 package lofty
 
-import "lofty/cmd/lofty/processing"
+import (
+	"lofty/cmd/lofty/lexer"
+	"lofty/cmd/lofty/types"
+)
 
 func SearchString(command string, target string) (bool, error) {
+	return SearchStringCustom(types.DefaultTokensDefinition, command, target)
+}
+
+func SearchStringCustom(defs types.TokensDefinition, command string, target string) (bool, error) {
 	var raw = []rune(command)
 
-	lexSuccess, tokens := processing.BooleanAlgebraLexer(raw)
+	lexSuccess, tokens := lexer.BooleanAlgebraLexer(defs, raw)
 
 	if lexSuccess {
-		result, err := processing.TokenShuntingAlgorithm(tokens)
+		result, err := lexer.TokenShuntingAlgorithm(tokens)
 
 		if err == nil {
-			return processing.SearchPostfixTokens(result, target), err
+			return lexer.SearchPostfixTokens(result, target), err
 		} else {
 			return false, err
 		}
