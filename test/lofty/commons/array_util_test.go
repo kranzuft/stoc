@@ -100,5 +100,20 @@ var _ = Describe("ArrayUtil tests", func() {
 				Expect(commons.StartsWith([]rune("123567"), 6, []rune("3"))).To(Equal(false))
 			})
 		})
+
+		Context("Test multiple search terms", func() {
+			It("should return true", func() {
+				Expect(commons.StartsWith([]rune("ABC123"), 0, []rune("A"), []rune("AB"), []rune("C1"), []rune("23"), []rune("ABC123"))).To(Equal(true))
+				Expect(commons.StartsWith([]rune("ABC123"), 2, []rune("A"), []rune("AB"), []rune("C1"), []rune("23"), []rune("ABC123"))).To(Equal(true))
+				Expect(commons.StartsWith([]rune("ABC123"), 4, []rune("A"), []rune("AB"), []rune("C1"), []rune("23"), []rune("ABC123"))).To(Equal(true))
+				Expect(commons.StartsWith([]rune("'test'"), 0, []rune("\""), []rune("'"))).To(Equal(true))
+				Expect(commons.StartsWith([]rune("\"test\""), 0, []rune("\""), []rune("'"))).To(Equal(true))
+			})
+			It("should return false", func() {
+				Expect(commons.StartsWith([]rune("ABC123"), 1, []rune("A"), []rune("AB"), []rune("C1"), []rune("23"), []rune("ABC123"))).To(Equal(false))
+				Expect(commons.StartsWith([]rune("ABC123"), 3, []rune("A"), []rune("AB"), []rune("C1"), []rune("23"), []rune("ABC123"))).To(Equal(false))
+				Expect(commons.StartsWith([]rune("ABC123"), 5, []rune("A"), []rune("AB"), []rune("C1"), []rune("23"), []rune("ABC123"))).To(Equal(false))
+			})
+		})
 	})
 })
