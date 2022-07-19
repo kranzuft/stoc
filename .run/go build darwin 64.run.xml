@@ -1,16 +1,17 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="go build darwin 64" type="GoApplicationRunConfiguration" factoryName="Go Application">
-    <module name="lofty" />
-    <working_directory value="$PROJECT_DIR$" />
-    <envs>
-      <env name="GOOS" value="darwin" />
-      <env name="GOARCH" value="amd64" />
-    </envs>
-    <kind value="PACKAGE" />
-    <package value="lofty/cmd/main" />
-    <directory value="$PROJECT_DIR$" />
-    <output_directory value="$PROJECT_DIR$/bin/darwin/amd64" />
-    <option name="run" value="false" />
-    <method v="2" />
-  </configuration>
+    <configuration default="false" name="go build darwin 64" type="GoApplicationRunConfiguration"
+                   factoryName="Go Application">
+        <module name="lofty"/>
+        <working_directory value="$PROJECT_DIR$"/>
+        <envs>
+            <env name="GOOS" value="darwin"/>
+            <env name="GOARCH" value="amd64"/>
+        </envs>
+        <kind value="PACKAGE"/>
+        <package value="lofty/cmd/"/>
+        <directory value="$PROJECT_DIR$"/>
+        <output_directory value="$PROJECT_DIR$/bin/darwin/amd64"/>
+        <option name="run" value="false"/>
+        <method v="2"/>
+    </configuration>
 </component>

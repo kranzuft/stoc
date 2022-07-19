@@ -69,6 +69,18 @@ func (td TokensDefinition) IsKeyword(r []rune, index int) bool {
 	return td.IsOr(r, index) || td.IsAnd(r, index) || td.IsLeftBracket(r, index) || td.IsRightBracket(r, index) || td.IsNot(r, index)
 }
 
+func (td TokensDefinition) IsQuote(r []rune, index int) bool {
+	return commons.StartsWith(r, index, td[S_QUOTE].key, td[D_QUOTE].key)
+}
+
+func (td TokensDefinition) IsSingleInvertedComma(r []rune, index int) bool {
+	return commons.StartsWith(r, index, td[S_QUOTE].key)
+}
+
+func (td TokensDefinition) IsDoubleInvertedComma(r []rune, index int) bool {
+	return commons.StartsWith(r, index, td[D_QUOTE].key)
+}
+
 // TokToString get the TokenInfo description for the token type by active tokens definition
 func (td TokensDefinition) TokToString(t TokenType) string {
 	return td[t].desc
@@ -87,6 +99,8 @@ func prepareDefaultTokensDefinition() TokensDefinition {
 		defineTokenInfo(RBR, ")", "right bracket").
 		defineTokenInfo(EOL, "\n", "end of line").
 		defineTokenInfo(EXP, "", "expression").
+		defineTokenInfo(D_QUOTE, "\"", "double inverted comma").
+		defineTokenInfo(S_QUOTE, "'", "single inverted comma").
 		finalise()
 }
 

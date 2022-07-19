@@ -35,6 +35,12 @@ type Definitions interface {
 
 	IsKeyword(r []rune, index int) bool
 
+	IsQuote(r []rune, index int) bool
+
+	IsSingleInvertedComma(r []rune, index int) bool
+
+	IsDoubleInvertedComma(r []rune, index int) bool
+
 	TokToString(t types.TokenType) string
 }
 
@@ -106,45 +112,88 @@ func lexRightBracket(defs Definitions, rawData []rune, index int) (int, types.To
 	return printError(defs, rawData, i, types.RBR)
 }
 
-// Lexes an expression
-func lexExpression(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn) {
-	var tok types.Token
-	tok.Typ = types.EXP
-	nextToken := false
+func lexExpressionWithQuotes(defs Definitions, rawData []rune, index int, doubleQuote bool) (int, int, bool) {
+	var isQ func([]rune, int) bool
+	if doubleQuote {
+		isQ = defs.IsDoubleInvertedComma
+	} else {
+		isQ = defs.IsSingleInvertedComma
+	}
+
 	i := index
-	lastI := i
+	for ; i < len(rawData) && !isQ(rawData, i); i++ {
+	}
+
+	endExp := i
+
+	nextIndex := i + 1 // move over quote
+	// now skip whitespace
+	nextIndex = skipWhitespace(rawData, nextIndex)
+	if nextIndex == len(rawData) || defs.IsRightBracket(rawData, nextIndex) || defs.IsAssociativeOp(rawData, nextIndex) {
+		return nextIndex, endExp, true
+	}
+
+	return i, i, false
+}
+
+func lexExpressionWithoutQuotes(defs Definitions, rawData []rune, index int) (int, int, bool) {
+	i := index
 	trailingWhitespace := 0
 
-	for ; i < len(rawData) && !nextToken; i++ {
+	foundNextToken := func(raw []rune, cur int) bool {
+		return defs.IsRightBracket(raw, cur) || defs.IsAssociativeOp(raw, cur)
+	}
+
+	for ; i < len(rawData) && !(i != index && foundNextToken(rawData, i)); i++ {
 		if defs.IsExpRune(rawData, i) {
 			trailingWhitespace = 0
 		} else if types.IsWhitespace(rawData, i) {
 			trailingWhitespace++
-		} else if i != index && (defs.IsRightBracket(rawData, i) || defs.IsAssociativeOp(rawData, i)) {
-			nextToken = true
 		} else {
-			return printError(defs, rawData, i, types.EXP)
+			return i, i, false
 		}
 	}
 
-	if i == len(rawData) && i > 0 && defs.IsExpRune(rawData, i-1) {
-		tok.Exp = string(rawData[lastI : i-trailingWhitespace])
+	return i, i - trailingWhitespace, true
+}
+
+// Lexes an expression
+func lexExpression(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn) {
+	var tok types.Token
+	tok.Typ = types.EXP
+
+	nextI := index
+	endExp := index
+	success := false
+	startExp := index
+
+	if defs.IsSingleInvertedComma(rawData, index) {
+		startExp++
+		nextI, endExp, success = lexExpressionWithQuotes(defs, rawData, startExp, false)
+	} else if defs.IsDoubleInvertedComma(rawData, index) {
+		startExp++
+		nextI, endExp, success = lexExpressionWithQuotes(defs, rawData, startExp, true)
 	} else {
-		tok.Exp = string(rawData[lastI : i-trailingWhitespace-1])
+		nextI, endExp, success = lexExpressionWithoutQuotes(defs, rawData, startExp)
 	}
-	i--
 
-	i = skipWhitespace(rawData, i)
+	if !success {
+		return printError(defs, rawData, nextI, types.EXP)
+	}
 
-	if i < len(rawData) {
-		if defs.IsAssociativeOp(rawData, i) {
-			return i, tok, lexOperator
-		} else if defs.IsRightBracket(rawData, i) {
-			return i, tok, lexRightBracket
+	tok.Exp = string(rawData[startExp:endExp])
+
+	nextI = skipWhitespace(rawData, nextI)
+
+	if nextI < len(rawData) {
+		if defs.IsAssociativeOp(rawData, nextI) {
+			return nextI, tok, lexOperator
+		} else if defs.IsRightBracket(rawData, nextI) {
+			return nextI, tok, lexRightBracket
 		}
 	}
 
-	return i, tok, nil
+	return nextI, tok, nil
 }
 
 func getNextFuncAfterOperator(defs Definitions, rawData []rune, index int, tok types.Token) (int, types.Token, stateFn) {
@@ -193,18 +242,38 @@ func lexOperator(defs Definitions, rawData []rune, index int) (int, types.Token,
 func determineTokenType(defs Definitions, rawData []rune, index int) (types.TokenType, int) {
 	typ := types.UNKNOWN
 	typeSize := 0
-	if defs.IsAnd(rawData, index) {
-		typ = types.AND
-		typeSize = defs.IsAndI()
-	} else if defs.IsOr(rawData, index) {
-		typ = types.OR
-		typeSize = defs.IsOrI()
+
+	// first see if it is an operator
+	opType, opLen := determineTokenTypeForOperator(defs, rawData, index)
+
+	if opType != types.UNKNOWN {
+		typ = opType
+		typeSize = opLen
 	} else if defs.IsRightBracket(rawData, index) {
 		typ = types.RBR
 		typeSize = defs.IsRightBracketI()
 	} else if defs.IsLeftBracket(rawData, index) {
 		typ = types.LBR
 		typeSize = defs.IsLeftBracketI()
+	} else if defs.IsSingleInvertedComma(rawData, index) {
+		typ = types.S_QUOTE
+	} else if defs.IsDoubleInvertedComma(rawData, index) {
+		typ = types.D_QUOTE
+	}
+
+	return typ, typeSize
+}
+
+func determineTokenTypeForOperator(defs Definitions, rawData []rune, index int) (types.TokenType, int) {
+	typ := types.UNKNOWN
+	typeSize := 0
+
+	if defs.IsAnd(rawData, index) {
+		typ = types.AND
+		typeSize = defs.IsAndI()
+	} else if defs.IsOr(rawData, index) {
+		typ = types.OR
+		typeSize = defs.IsOrI()
 	}
 
 	if types.CouldBeComplexOp(typ) {
