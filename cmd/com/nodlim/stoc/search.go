@@ -1,8 +1,8 @@
 package stoc
 
 import (
-	"stoc/cmd/com/nodlim/stoc/lexer"
-	"stoc/cmd/com/nodlim/stoc/types"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/lexer"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
 )
 
 func SearchString(command string, target string) (bool, error) {

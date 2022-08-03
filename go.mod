@@ -1,4 +1,4 @@
-module stoc
+module github.com/kranzuft/stoc
 
 go 1.18
 

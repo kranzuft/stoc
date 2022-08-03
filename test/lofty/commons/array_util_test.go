@@ -1,10 +1,10 @@
 package commons
 
 import (
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/commons"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"stoc/cmd/com/nodlim/stoc/commons"
-	types2 "stoc/cmd/com/nodlim/stoc/types"
 	"testing"
 )
 
@@ -16,10 +16,10 @@ func TestArrayUtil(t *testing.T) {
 	RunSpecs(t, "CommonsArrayUtil")
 }
 
-var T_LBR = types2.Token{Typ: types2.LBR, Exp: "("}
-var T_RBR = types2.Token{Typ: types2.RBR, Exp: ")"}
-var T_AND = types2.Token{Typ: types2.AND, Exp: "&"}
-var T_OR = types2.Token{Typ: types2.OR, Exp: "|"}
+var T_LBR = types.Token{Typ: types.LBR, Exp: "("}
+var T_RBR = types.Token{Typ: types.RBR, Exp: ")"}
+var T_AND = types.Token{Typ: types.AND, Exp: "&"}
+var T_OR = types.Token{Typ: types.OR, Exp: "|"}
 
 var _ = Describe("ArrayUtil tests", func() {
 	// LastIndexOf tests
@@ -63,8 +63,8 @@ var _ = Describe("ArrayUtil tests", func() {
 		Describe("a token value item", func() {
 			Context("against a small token array of repeated items", func() {
 				It("should return the last index of the token in the array", func() {
-					Expect(commons.LastIndexOf([]types2.Token{T_LBR, T_RBR, T_AND, T_OR, T_AND, T_OR}, func(t types2.Token) bool { return t.Typ == types2.AND })).To(Equal(4))
-					Expect(commons.LastIndexOf([]types2.Token{T_LBR, T_RBR, T_AND, T_OR, T_AND, T_OR}, func(t types2.Token) bool { return t.Typ == types2.OR })).To(Equal(5))
+					Expect(commons.LastIndexOf([]types.Token{T_LBR, T_RBR, T_AND, T_OR, T_AND, T_OR}, func(t types.Token) bool { return t.Typ == types.AND })).To(Equal(4))
+					Expect(commons.LastIndexOf([]types.Token{T_LBR, T_RBR, T_AND, T_OR, T_AND, T_OR}, func(t types.Token) bool { return t.Typ == types.OR })).To(Equal(5))
 				})
 			})
 		})

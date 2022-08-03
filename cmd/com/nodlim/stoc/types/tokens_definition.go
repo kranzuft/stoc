@@ -1,7 +1,7 @@
 package types
 
 import (
-	"stoc/cmd/com/nodlim/stoc/commons"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/commons"
 )
 
 type TokensDefinition map[TokenType]TokenInfo

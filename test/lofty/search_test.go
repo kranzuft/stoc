@@ -1,9 +1,9 @@
 package lofty
 
 import (
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"stoc/cmd/com/nodlim/stoc"
 	"testing"
 )
 

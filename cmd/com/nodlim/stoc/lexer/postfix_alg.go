@@ -1,9 +1,9 @@
 package lexer
 
 import (
-	"stoc/cmd/com/nodlim/stoc/commons"
-	"stoc/cmd/com/nodlim/stoc/search_error"
-	"stoc/cmd/com/nodlim/stoc/types"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/commons"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/search_error"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
 	"strings"
 )
 

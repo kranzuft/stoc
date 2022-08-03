@@ -2,9 +2,9 @@ package lexer
 
 import (
 	"fmt"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
 	"math"
 	"runtime/debug"
-	"stoc/cmd/com/nodlim/stoc/types"
 	"strings"
 )
 
