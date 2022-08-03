@@ -26,3 +26,6 @@ Only dependencies are for unit testing using ginkgo and gomega
 - might be good to include basic regex concepts like \w\d\s word, digit, whitespace \W\D\S not word, digit,
   whitespace, and potentially ^ and $
 
+## Frontends
+
+https://github.com/kranzuft/stoc (reference implementation)
