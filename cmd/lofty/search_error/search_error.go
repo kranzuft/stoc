@@ -1,8 +1,6 @@
 package search_error
 
-import (
-	"github.com/pkg/errors"
-)
+import "errors"
 
 // SearchError custom error, with stacktrace and with an error type variable
 type SearchError struct {
