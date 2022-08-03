@@ -1,8 +1,8 @@
-package lofty
+package stoc
 
 import (
-	"lofty/cmd/lofty/lexer"
-	"lofty/cmd/lofty/types"
+	"stoc/cmd/com/nodlim/stoc/lexer"
+	"stoc/cmd/com/nodlim/stoc/types"
 )
 
 func SearchString(command string, target string) (bool, error) {

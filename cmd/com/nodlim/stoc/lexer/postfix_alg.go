@@ -1,9 +1,9 @@
 package lexer
 
 import (
-	"lofty/cmd/lofty/commons"
-	"lofty/cmd/lofty/search_error"
-	"lofty/cmd/lofty/types"
+	"stoc/cmd/com/nodlim/stoc/commons"
+	"stoc/cmd/com/nodlim/stoc/search_error"
+	"stoc/cmd/com/nodlim/stoc/types"
 	"strings"
 )
 

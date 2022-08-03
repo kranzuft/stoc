@@ -1,4 +1,4 @@
-module lofty
+module stoc
 
 go 1.18
 

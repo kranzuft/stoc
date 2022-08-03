@@ -3,7 +3,7 @@ package lofty
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"lofty/cmd/lofty"
+	"stoc/cmd/com/nodlim/stoc"
 	"testing"
 )
 
@@ -22,7 +22,7 @@ func TestSearch(t *testing.T) {
 
 // Get rid of error, we just want to no if success or not
 func SearchString(command string, target string) bool {
-	success, _ := lofty.SearchString(command, target)
+	success, _ := stoc.SearchString(command, target)
 	return success
 }
 

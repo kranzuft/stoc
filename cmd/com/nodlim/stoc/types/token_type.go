@@ -20,8 +20,8 @@ const (
 	LBR     TokenType = "LEFT_BRACKET"
 	RBR     TokenType = "RIGHT_BRACKET"
 	TRUE    TokenType = "TRUE"
-	D_QUOTE TokenType = "DOUBLE_INVERTED_COMMA"
-	S_QUOTE TokenType = "SINGLE_INVERTED_COMMA"
+	DQUOTE  TokenType = "DOUBLE_INVERTED_COMMA"
+	SQUOTE  TokenType = "SINGLE_INVERTED_COMMA"
 )
 
 func IsLeftAssociative(tok TokenType) bool {

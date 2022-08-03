@@ -2,9 +2,9 @@ package lexer
 
 import (
 	"fmt"
-	"lofty/cmd/lofty/types"
 	"math"
 	"runtime/debug"
+	"stoc/cmd/com/nodlim/stoc/types"
 	"strings"
 )
 
@@ -209,7 +209,7 @@ func getNextFuncAfterOperator(defs Definitions, rawData []rune, index int, tok t
 	return printError(defs, rawData, index+1, types.EXP, types.LBR)
 }
 
-func lexNotSymbolAndCreateTrueToken(defs Definitions, _ []rune, index int) (int, types.Token, stateFn) {
+func lexNotSymbolAndCreateTrueToken(_ Definitions, _ []rune, index int) (int, types.Token, stateFn) {
 	var tok types.Token
 
 	tok.Typ = types.TRUE
@@ -256,9 +256,9 @@ func determineTokenType(defs Definitions, rawData []rune, index int) (types.Toke
 		typ = types.LBR
 		typeSize = defs.IsLeftBracketI()
 	} else if defs.IsSingleInvertedComma(rawData, index) {
-		typ = types.S_QUOTE
+		typ = types.SQUOTE
 	} else if defs.IsDoubleInvertedComma(rawData, index) {
-		typ = types.D_QUOTE
+		typ = types.DQUOTE
 	}
 
 	return typ, typeSize
