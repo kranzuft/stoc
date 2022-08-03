@@ -28,4 +28,4 @@ Only dependencies are for unit testing using ginkgo and gomega
 
 ## Frontends
 
-https://github.com/kranzuft/stoc (reference implementation)
+https://github.com/kranzuft/stoc-cli (reference implementation)
