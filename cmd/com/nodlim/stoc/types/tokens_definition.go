@@ -6,7 +6,7 @@ import (
 
 type TokensDefinition map[TokenType]TokenInfo
 
-func (td *TokensDefinition) defineTokenInfo(typ TokenType, key string, description string) *TokensDefinition {
+func (td *TokensDefinition) DefineTokenInfo(typ TokenType, key string, description string) *TokensDefinition {
 	(*td)[typ] = TokenInfo{
 		desc: description,
 		key:  []rune(key),
@@ -15,7 +15,7 @@ func (td *TokensDefinition) defineTokenInfo(typ TokenType, key string, descripti
 	return td
 }
 
-func (td *TokensDefinition) finalise() TokensDefinition {
+func (td *TokensDefinition) Finalise() TokensDefinition {
 	return *td
 }
 
@@ -91,19 +91,19 @@ func (td TokensDefinition) TokToString(t TokenType) string {
 func prepareDefaultTokensDefinition() TokensDefinition {
 	def := TokensDefinition{}
 	return def.
-		defineTokenInfo(AND, "&", "and").
-		defineTokenInfo(OR, "|", "or").
-		defineTokenInfo(NOT, "!", "not").
-		defineTokenInfo(ANDNOT, "&!", "and not").
-		defineTokenInfo(ORNOT, "&!", "or not").
-		defineTokenInfo(TRUE, "True", "true").
-		defineTokenInfo(LBR, "(", "left bracket").
-		defineTokenInfo(RBR, ")", "right bracket").
-		defineTokenInfo(EOL, "\n", "end of line").
-		defineTokenInfo(EXP, "", "expression").
-		defineTokenInfo(DQUOTE, "\"", "double inverted comma").
-		defineTokenInfo(SQUOTE, "'", "single inverted comma").
-		finalise()
+		DefineTokenInfo(AND, "&", "and").
+		DefineTokenInfo(OR, "|", "or").
+		DefineTokenInfo(NOT, "!", "not").
+		DefineTokenInfo(ANDNOT, "&!", "and not").
+		DefineTokenInfo(ORNOT, "&!", "or not").
+		DefineTokenInfo(TRUE, "True", "true").
+		DefineTokenInfo(LBR, "(", "left bracket").
+		DefineTokenInfo(RBR, ")", "right bracket").
+		DefineTokenInfo(EOL, "\n", "end of line").
+		DefineTokenInfo(EXP, "", "expression").
+		DefineTokenInfo(DQUOTE, "\"", "double inverted comma").
+		DefineTokenInfo(SQUOTE, "'", "single inverted comma").
+		Finalise()
 }
 
 var DefaultTokensDefinition = prepareDefaultTokensDefinition()

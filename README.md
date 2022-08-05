@@ -9,9 +9,22 @@ Plain english and simple boolean algebra is used.
 
 Only dependencies are for unit testing using ginkgo and gomega
 
+## Current features
+
+- and, or, not conditions
+- quotes around strings
+- custom types (see tokens_definition.go ```prepareDefaultTokensDefinition()``` function)
+
+## Examples
+
+- not ("foo" or 'baa') and baz // brackets work with unary and binary conditionals
+- foo or "baa or baz" // keywords can be in expressions using quotes
+- foo and "foo" // this is equivalent to the next example
+- foo // you can do simple search as well
+
 ## RoadMap
 
-- quotes around strings
+- escaping quotes in expressions
 - using golang error more instead of just printing an error, since this is meant to be a library not an app
 - some way to make strings case-sensitive and case-insensitive, both for the full command and part of it.
   Probably can do using single and double quotes. quotes would be optional and default to case-insensitive
