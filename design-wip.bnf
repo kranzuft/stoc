@@ -1,9 +1,0 @@
-
-
-<single_quote> ::= "'"
-<double_quote> ::= '"'
-<expression> ::= unicode | <single_quote> unicode <single_quote> | <double_quote> unicode <double_quote>
-<binary_condition> ::= AND | OR
-<unary_condition> ::= NOT
-<filter> ::= <expression> | <expression> <binary_condition> <expression> | <unary_condition> <expression>
-<search> ::= <filter> | <binary_condition> | <filter>
