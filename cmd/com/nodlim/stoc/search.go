@@ -21,9 +21,12 @@
 package stoc
 
 import (
+	"errors"
 	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/lexer"
 	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
 )
+
+type PreparedTokens []types.Token
 
 // SearchString will search through the contents of target arg based on the command arg.
 // The command string must be a valid condition.
@@ -43,19 +46,33 @@ func SearchString(command string, target string) (bool, error) {
 //
 // The condition must follow the syntax defined by defs arg and match the standard condition grammar.
 func SearchStringCustom(defs types.TokensDefinition, command string, target string) (bool, error) {
-	var raw = []rune(command)
+	preparedTokens, err := LexIntoTokens(defs, command)
 
-	lexSuccess, tokens := lexer.BooleanAlgebraLexer(defs, raw)
+	if err == nil {
+		return SearchTokens(preparedTokens, target), err
+	}
+
+	return false, err
+}
+
+// SearchTokens searches target with pre-prepared tokens
+func SearchTokens(preparation PreparedTokens, target string) bool {
+	return lexer.SearchPostfixTokens(preparation, target)
+}
+
+// LexIntoTokens produces postfix tokens from TokensDefinition and raw tokens-to-be command
+func LexIntoTokens(defs types.TokensDefinition, command string) (PreparedTokens, error) {
+	lexSuccess, tokens := lexer.BooleanAlgebraLexer(defs, []rune(command))
 
 	if lexSuccess {
 		result, err := lexer.TokenShuntingAlgorithm(tokens)
 
 		if err == nil {
-			return lexer.SearchPostfixTokens(result, target), err
+			return result, err
 		} else {
-			return false, err
+			return nil, err
 		}
 	}
 
-	return false, nil
+	return nil, errors.New("couldn't lex command")
 }
