@@ -15,8 +15,6 @@
 //
 // For the coded version of the default syntax, see types.DefaultTokensDefinition
 // For a formalised version of the default syntax (ebnf or railroad), see the design/ folder in the source code
-//
-// Potential improvement: create and postfix tokens first, then search
 package stoc
 
 import (
