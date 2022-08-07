@@ -25,6 +25,7 @@ import (
 	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
 )
 
+// PreparedTokens tokens that have been pre-prepared and in post-fix notation
 type PreparedTokens []types.Token
 
 // SearchString will search through the contents of target arg based on the command arg.
