@@ -34,10 +34,10 @@ Only dependencies are for unit testing using ginkgo and gomega
 
 You can use custom types with stoc library. For instance using words instead of symbols:
 
-- not { "foo" or 'baa' } and baz // brackets work with unary and binary conditionals
-- foo or "baa or baz" // keywords can be in expressions using quotes
-- foo and "foo" // this is equivalent to the next example
-- foo // you can do simple search as well
+- ```not { "foo" or 'baa' } and baz```
+- ```foo or "baa or baz"```
+- ```foo and "foo"```
+- ```foo```
 
 this can be configured with the following code snippet:
 
