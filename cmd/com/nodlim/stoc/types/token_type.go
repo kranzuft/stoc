@@ -1,4 +1,4 @@
-// Package types
+// Package types defines types for conditional grammar
 // Defines the rules governing types in stoc, and are the core building block of the condition grammar.
 // stoc is heavily influenced by type-theory.
 // The types are pivotal to the lexer package

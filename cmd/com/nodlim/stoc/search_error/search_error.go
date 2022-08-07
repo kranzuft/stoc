@@ -1,3 +1,4 @@
+// Package search_error error handling
 package search_error
 
 import "errors"

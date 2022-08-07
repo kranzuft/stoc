@@ -1,4 +1,4 @@
-// Package lexer: handles passing tokens from raw text data
+// Package lexer handles passing tokens from raw text data
 //
 // The lexer package is made up of the token lexer and postfix algorithm
 //

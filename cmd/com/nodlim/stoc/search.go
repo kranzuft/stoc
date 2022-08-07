@@ -1,4 +1,4 @@
-// stoc: search text on condition
+// Package stoc: search text on condition
 // Uses boolean algebra to search input text.
 // Whether the boolean algebra 'condition' is met determines results: true or false.
 //
@@ -17,7 +17,6 @@
 // For a formalised version of the default syntax (ebnf or railroad), see the design/ folder in the source code
 //
 // Potential improvement: create and postfix tokens first, then search
-
 package stoc
 
 import (
