@@ -13,8 +13,8 @@ basic_expression = "'", {unicode_symbol}, "'"
   | '"', {unicode_symbol}, '"'
   | unicode_symbol, {unicode_symbol};
 context_expression = [number, before_modifier], basic_expression, [after_modifier, number];
-expression = basic_expression | context_exp![](../../Desktop/Screen Shot 2022-08-06 at 11.29.51 pm.png)ression;
+expression = basic_expression | context_expression;
 condition = expression 
-  | expression, binary_condition, expression ![](../../Desktop/Screen Shot 2022-08-06 at 11.29.51 pm.png)
+  | expression, binary_condition, expression
   | unary_condition, expression 
   | "(", condition, ")";
