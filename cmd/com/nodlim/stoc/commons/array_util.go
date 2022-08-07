@@ -10,6 +10,10 @@ func LastIndexOf[E any](array []E, predicate func(E) bool) int {
 	return -1
 }
 
+// StartsWith compares first with all seconds to find a matching second that first begins with.
+//
+// As soon as all seconds don't match first it returns false.
+// As soon as a second fully matches the start of first it returns true.
 func StartsWith(first []rune, index int, seconds ...[]rune) bool {
 	sLength := len(seconds)
 
@@ -37,6 +41,7 @@ func StartsWith(first []rune, index int, seconds ...[]rune) bool {
 	return false
 }
 
+// Contains Checks if list s contains e
 func Contains[T comparable](s []T, e T) bool {
 	for _, v := range s {
 		if v == e {

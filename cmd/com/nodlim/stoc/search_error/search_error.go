@@ -9,6 +9,7 @@ type SearchError struct {
 	position int
 }
 
+// ErrType defines common descriptors for errors
 type ErrType int
 
 const (
@@ -16,6 +17,10 @@ const (
 	MismatchedBrackets
 )
 
+// New creates a new SearchError based on parameters
+// message is converted into an error and stored
+// typ defines the ErrType
+// position is the position in the originating text where the error occurred
 func New(message string, typ ErrType, position int) *SearchError {
 	err := &SearchError{
 		error:    errors.New(message),

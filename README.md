@@ -13,22 +13,23 @@ Only dependencies are for unit testing using ginkgo and gomega
 
 - and, or, not conditions
 - quotes around strings
-- custom types (see tokens_definition.go ```prepareDefaultTokensDefinition()``` function)
+- custom types (see tokens_definition.go ```prepareDefaultTokensDefinition()``` function and 'Custom Examples' section
+  below)
 
 ## Basic Examples
 
 - should not contain foo or baa, and must have baz
-    ```! ( "foo" | 'baa' ) & baz```
-  - brackets work with unary and binary conditionals
+  ```! ( "foo" | 'baa' ) & baz```
+    - brackets work with unary and binary conditionals
 - The word foo or the phrase "baa or baz"
-    ```foo | "baa | baz"``` 
-  - keywords can be in expressions using quotes
+  ```foo | "baa | baz"```
+    - keywords can be in expressions using quotes
 - The phrase foo and the phrase foo
-    ```foo & "foo"``` 
-  - this is clearly redundant and is equivalent to the next example
+  ```foo & "foo"```
+    - this is clearly redundant and is equivalent to the next example
 - The phrase foo
-    ```foo```
-  - simple search is always an option
+  ```foo```
+    - simple search is always an option
 
 ## Custom Examples
 
@@ -45,8 +46,8 @@ this can be configured with the following code snippet:
 package main
 
 import (
-"github.com/kranzuft/stoc/cmd/com/nodlim/stoc"
-"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
 )
 
 func main() {
@@ -64,7 +65,7 @@ func main() {
 		DefineTokenInfo(types.DQUOTE, "\"", "double inverted comma").
 		DefineTokenInfo(types.SQUOTE, "'", "single inverted comma").
 		Finalise()
-	stoc.SearchStringCustom(customTypes, "Hello or hi", "Hello world")
+	success, err := stoc.SearchStringCustom(customTypes, "Hello or hi", "Hello world")
 }
 ```
 

@@ -1,3 +1,24 @@
+// Package lexer: handles passing tokens from raw text data
+//
+// The lexer package is made up of the token lexer and postfix algorithm
+//
+// Token Lexer
+// Primarily consists of functions that process a token, and the return with the given token and a function
+// that defines the next step in processing.
+//
+// Postfix Algorithm
+// Consists of two primary functions:
+// 1. converts the in-fix tokens array to post-fix
+// 2. processes the post-fix tokens against a target text and determines whether the text meets the conditions defined by the tokens
+//
+//
+// Potential improvement:
+// Part of the token lexer design is to minimise repeated decisions. When it comes to determining
+// token type, at times we figure out the generic type, which requires checking specific types, and then pass it on to
+// a generic function to then figure out the specific type again. For instance the generic type operator is determined
+// by figuring out if it matches a specific operator type, then pass to a function to lex any operator. That function then
+// has to re-determine the operator type. It might be worth creating simple functions for each type, that call the
+// lexOperator function internally with a pre-determined type
 package lexer
 
 import (
@@ -8,6 +29,7 @@ import (
 	"strings"
 )
 
+// Definitions interface for lexer type definitions. A valid implementation is types.TokensDefinition.
 type Definitions interface {
 	IsLeftBracket(r []rune, index int) bool
 
@@ -72,7 +94,9 @@ func BooleanAlgebraLexer(defs Definitions, raw []rune) (bool, []types.Token) {
 	return true, tokens
 }
 
-// Lexical left bracket
+// lexLeftBracket Lex a left bracket
+//
+// A left bracket can be proceeded by an expression, a left bracket or a not operator
 func lexLeftBracket(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn) {
 	var tok types.Token
 	tok.Typ = types.LBR // we don't need to track that it's a left bracket anymore
@@ -92,7 +116,9 @@ func lexLeftBracket(defs Definitions, rawData []rune, index int) (int, types.Tok
 	return printError(defs, rawData, i, types.EXP)
 }
 
-// Lexical right bracket
+// lexRightBracket Lex a right bracket.
+//
+// A right bracket can be proceeded by an operator or a right bracket
 func lexRightBracket(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn) {
 	var tok types.Token
 	tok.Typ = types.RBR // we don't need to track that it's a right bracket anymore
@@ -112,8 +138,13 @@ func lexRightBracket(defs Definitions, rawData []rune, index int) (int, types.To
 	return printError(defs, rawData, i, types.RBR)
 }
 
+// lexExpressionWithQuotes lex expression with surrounding quotes
+//
+// We determine nextIndex in return because lexExpressionWithoutQuotes inherently determines this, so although we don't,
+// we do
 func lexExpressionWithQuotes(defs Definitions, rawData []rune, index int, doubleQuote bool) (int, int, bool) {
 	var isQ func([]rune, int) bool
+	// if an expression starts with a double quote, it must end with a double quote, and same for a single quote
 	if doubleQuote {
 		isQ = defs.IsDoubleInvertedComma
 	} else {
@@ -126,7 +157,7 @@ func lexExpressionWithQuotes(defs Definitions, rawData []rune, index int, double
 
 	endExp := i
 
-	nextIndex := i + 1 // move over quote
+	nextIndex := i + 1 // move over quote symbol
 	// now skip whitespace
 	nextIndex = skipWhitespace(rawData, nextIndex)
 	if nextIndex == len(rawData) || defs.IsRightBracket(rawData, nextIndex) || defs.IsAssociativeOp(rawData, nextIndex) {
@@ -136,6 +167,9 @@ func lexExpressionWithQuotes(defs Definitions, rawData []rune, index int, double
 	return i, i, false
 }
 
+// lexExpressionWithoutQuotes lex expression without quotes
+// Since we do not have quotes to bind the expression, we must wait until we find a keyword
+// Should only be called by lexExpression, as it check for quotes first.
 func lexExpressionWithoutQuotes(defs Definitions, rawData []rune, index int) (int, int, bool) {
 	i := index
 	trailingWhitespace := 0
@@ -157,15 +191,20 @@ func lexExpressionWithoutQuotes(defs Definitions, rawData []rune, index int) (in
 	return i, i - trailingWhitespace, true
 }
 
-// Lexes an expression
+// lexExpression lex an expression with or without quotes
+// Determines if quotes are used and then hands off to lexExpressionWithQuotes or lexExpressionWithoutQuotes
+//
+// Expressions are followed by either operators or right brackets
 func lexExpression(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn) {
 	var tok types.Token
 	tok.Typ = types.EXP
 
-	nextI := index
-	endExp := index
 	success := false
+	// we need to track the start and end of the expression
 	startExp := index
+	endExp := index
+	// and also when the next token starts
+	nextI := index
 
 	if defs.IsSingleInvertedComma(rawData, index) {
 		startExp++
@@ -196,6 +235,9 @@ func lexExpression(defs Definitions, rawData []rune, index int) (int, types.Toke
 	return nextI, tok, nil
 }
 
+// getNextFuncAfterOperator finds what function to call based on the last operator processed by the lexer.
+//
+// Operators are followed by expressions or left brackets
 func getNextFuncAfterOperator(defs Definitions, rawData []rune, index int, tok types.Token) (int, types.Token, stateFn) {
 	index = skipWhitespace(rawData, index)
 	if index < len(rawData) {
@@ -209,6 +251,9 @@ func getNextFuncAfterOperator(defs Definitions, rawData []rune, index int, tok t
 	return printError(defs, rawData, index+1, types.EXP, types.LBR)
 }
 
+// lexNotSymbolAndCreateTrueToken for not symbols at the front of a condition or after a left bracket, we have to push
+// a TRUE token first to form a valid binary operation. This function passes out that types.TRUE token, before calling
+// the more common not-operator-lexing function lexNotSymbolAndCreateAndNotToken
 func lexNotSymbolAndCreateTrueToken(_ Definitions, _ []rune, index int) (int, types.Token, stateFn) {
 	var tok types.Token
 
@@ -218,6 +263,8 @@ func lexNotSymbolAndCreateTrueToken(_ Definitions, _ []rune, index int) (int, ty
 	return index, tok, lexNotSymbolAndCreateAndNotToken
 }
 
+// lexNotSymbolAndCreateAndNotToken Takes a types.NOT and makes it into a types.ANDNOT token type
+// by combining the preceding types.AND token using this function
 func lexNotSymbolAndCreateAndNotToken(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn) {
 	var tok types.Token
 
@@ -229,6 +276,7 @@ func lexNotSymbolAndCreateAndNotToken(defs Definitions, rawData []rune, index in
 	return getNextFuncAfterOperator(defs, rawData, i, tok)
 }
 
+// lexOperator Creates an operator token, and then calls getNextFuncAfterOperator to determine next step
 func lexOperator(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn) {
 	var tok types.Token
 	indexEnd := 0
@@ -239,6 +287,7 @@ func lexOperator(defs Definitions, rawData []rune, index int) (int, types.Token,
 	return getNextFuncAfterOperator(defs, rawData, index+indexEnd, tok)
 }
 
+// determineTokenType determines the token type for rawData rune array at numeric index 'index'
 func determineTokenType(defs Definitions, rawData []rune, index int) (types.TokenType, int) {
 	typ := types.UNKNOWN
 	typeSize := 0
@@ -264,21 +313,29 @@ func determineTokenType(defs Definitions, rawData []rune, index int) (types.Toke
 	return typ, typeSize
 }
 
+// determineTokenType determines the token type for rawData rune array at numeric index 'index'
 func determineTokenTypeForOperator(defs Definitions, rawData []rune, index int) (types.TokenType, int) {
 	typ := types.UNKNOWN
 	typeSize := 0
+	couldBeComplex := false
 
+	// Let's try and make it a known type
 	if defs.IsAnd(rawData, index) {
 		typ = types.AND
 		typeSize = defs.IsAndI()
+		couldBeComplex = true
 	} else if defs.IsOr(rawData, index) {
 		typ = types.OR
 		typeSize = defs.IsOrI()
+		couldBeComplex = true
 	}
 
-	if types.CouldBeComplexOp(typ) {
+	// if we made it a known type
+	// Although not UNKNOWN is equivalent to couldBeComplex, it won't be in future improvements
+	if typ != types.UNKNOWN && couldBeComplex {
 		skipForward := skipWhitespace(rawData, index+typeSize)
 
+		// if a not follows, then it's a complex operator
 		if defs.IsNot(rawData, skipForward) {
 			if typ == types.AND {
 				typ = types.ANDNOT
@@ -293,6 +350,9 @@ func determineTokenTypeForOperator(defs Definitions, rawData []rune, index int) 
 	return typ, typeSize
 }
 
+// printError Prints an error when an error occurs in lexing.
+//
+// To be deprecated and replaced with an error with the same level of detail.
 func printError(defs Definitions, rawData []rune, index int, expected ...types.TokenType) (int, types.Token, stateFn) {
 	var found types.TokenType
 	index = skipWhitespace(rawData, index)
@@ -307,6 +367,7 @@ func printError(defs Definitions, rawData []rune, index int, expected ...types.T
 	return errorMessage(defs, rawData, index, message)
 }
 
+// errorMessage Builds an error message based on the current context of the lexer
 func errorMessage(_ Definitions, rawData []rune, index int, message string) (int, types.Token, stateFn) {
 	fmt.Println("ERROR: " + message)
 	if len(rawData) > 0 {
@@ -320,6 +381,7 @@ func errorMessage(_ Definitions, rawData []rune, index int, message string) (int
 	return index, getErrorToken(), nil
 }
 
+// skipWhitespace skips whitespace in rawData array at index
 func skipWhitespace(rawData []rune, index int) int {
 	i := index
 
@@ -332,6 +394,9 @@ func skipWhitespace(rawData []rune, index int) int {
 	return i
 }
 
+// determineIfExpressionOrLeftBracketOrNot Determines if next is a left bracket, an expression, or a not.
+//
+// Can be considered the entrypoint of the lexer. The types it looks for a valid starting values
 func determineIfExpressionOrLeftBracketOrNot(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn) {
 	if defs.IsLeftBracket(rawData, index) {
 		return lexLeftBracket(defs, rawData, index)
@@ -348,6 +413,7 @@ func getErrorToken() types.Token {
 	return types.Token{Typ: types.UNKNOWN}
 }
 
+// tokensToList lists input tokens in a string, based on Definitions object
 func tokensToList(defs Definitions, expected []types.TokenType) string {
 	var res strings.Builder
 	for index, exp := range expected {

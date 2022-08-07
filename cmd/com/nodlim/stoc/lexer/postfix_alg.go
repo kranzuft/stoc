@@ -7,16 +7,14 @@ import (
 	"strings"
 )
 
-// Shunting algorithm, based on the mathematical implementation available on the shunting algorithm wiki page
+// TokenShuntingAlgorithm Shunting algorithm, based on the mathematical implementation available on the shunting algorithm wiki page
 //
-// A snapshot of that algorithm is below (this implementation is a simplified version with some unincluded additions):
+// A snapshot of that algorithm is below (this implementation is a simplified version with some new additions):
 //
-// while there are parsed to be read:
+// while there are unparsed to be read:
 //     read a token.
-//     if the token is a number, then:
+//     if the token is an expression, then:
 //         push it to the output queue.
-//     else if the token is a function then:
-//         push it onto the operator stack
 //     else if the token is an operator then:
 //         while ((there is an operator at the top of the operator stack)
 //               and ((the operator at the top of the operator stack has greater precedence)
@@ -40,13 +38,12 @@ import (
 //         -> If the operator token on the top of the stack is a parenthesis, then there are mismatched parentheses.
 //         pop the operator from the operator stack onto the output queue.
 // exit.
-
 func TokenShuntingAlgorithm(toks []types.Token) ([]types.Token, error) {
 	var parsed []types.Token
 	var operator []types.Token
 	for i, tok := range toks {
 		// This implementation does not implement composite functions, functions with variable number of arguments,
-		// and unary operators.
+		// and unary operators. (Note: unary operators are represented using and-not, or-not instead)
 		if tok.Typ == types.EXP || tok.Typ == types.TRUE {
 			parsed = append(parsed, tok)
 		} else if types.IsOp(tok.Typ) {
@@ -88,6 +85,9 @@ func TokenShuntingAlgorithm(toks []types.Token) ([]types.Token, error) {
 	return parsed, nil
 }
 
+// SearchPostfixTokens takes the postfix formatted tokens and parses the tokens. It uses the tokens to apply conditions on
+// the 'target' string. If the conditions aren't met then
+// Recommended to not be called directly. Instead, call stoc.SearchString or stoc.SearchStringCustom.
 func SearchPostfixTokens(search []types.Token, target string) bool {
 	var stack []bool
 	for _, tok := range search {
