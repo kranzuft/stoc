@@ -51,7 +51,7 @@ import (
 
 func main() {
 	def := types.TokensDefinition{}
-	final := def.DefineTokenInfo(types.AND, "and", "and").
+	customTypes := def.DefineTokenInfo(types.AND, "and", "and").
 		DefineTokenInfo(types.OR, "or", "or").
 		DefineTokenInfo(types.NOT, "not", "not").
 		DefineTokenInfo(types.ANDNOT, "and not", "and not").
@@ -64,7 +64,7 @@ func main() {
 		DefineTokenInfo(types.DQUOTE, "\"", "double inverted comma").
 		DefineTokenInfo(types.SQUOTE, "'", "single inverted comma").
 		Finalise()
-	stoc.SearchStringCustom(final, "Hello or hi", "Hello world")
+	stoc.SearchStringCustom(customTypes, "Hello or hi", "Hello world")
 }
 ```
 
