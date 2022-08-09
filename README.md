@@ -1,5 +1,8 @@
 # STOC (Search Text On Condition)
 
+[![Build](https://github.com/kranzuft/stoc/actions/workflows/goBuild.yml/badge.svg)](https://github.com/kranzuft/stoc/actions/workflows/goBuild.yml)
+[![Test](https://github.com/kranzuft/stoc/actions/workflows/goTest.yml/badge.svg)](https://github.com/kranzuft/stoc/actions/workflows/goTest.yml)
+
 ## Overview
 
 Bridges the gap between simple searching on a single string, and more powerful search using regex.
