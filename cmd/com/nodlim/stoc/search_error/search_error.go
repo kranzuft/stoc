@@ -3,7 +3,7 @@ package search_error
 
 import "errors"
 
-// SearchError custom error, with stacktrace and with an error type variable
+// SearchError custom error
 type SearchError struct {
 	error
 	position int
