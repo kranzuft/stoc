@@ -18,7 +18,6 @@
 package stoc
 
 import (
-	"errors"
 	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/lexer"
 	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
 )
@@ -60,17 +59,17 @@ func SearchTokens(preparation PreparedTokens, target string) bool {
 
 // LexIntoTokens produces postfix tokens from TokensDefinition and raw tokens-to-be command
 func LexIntoTokens(defs types.TokensDefinition, command string) (PreparedTokens, error) {
-	lexSuccess, tokens := lexer.BooleanAlgebraLexer(defs, []rune(command))
+	tokens, errLex := lexer.BooleanAlgebraLexer(defs, []rune(command))
 
-	if lexSuccess {
-		result, err := lexer.TokenShuntingAlgorithm(tokens)
+	if errLex == nil {
+		result, errShunt := lexer.TokenShuntingAlgorithm(tokens)
 
-		if err == nil {
-			return result, err
+		if errShunt == nil {
+			return result, errShunt
 		} else {
-			return nil, err
+			return nil, errShunt
 		}
+	} else {
+		return nil, errLex
 	}
-
-	return nil, errors.New("couldn't lex command")
 }

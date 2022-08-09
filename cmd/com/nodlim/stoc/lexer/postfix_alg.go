@@ -61,7 +61,7 @@ func TokenShuntingAlgorithm(toks []types.Token) ([]types.Token, error) {
 
 			// If the stack runs out without finding a left parenthesis, then there are mismatched parentheses.
 			if len(operator) == 0 {
-				return parsed, search_error.New("shunting error, missing right bracket", search_error.MissingRightBracket, i)
+				return parsed, search_error.New("shunting error, missing right bracket", i)
 			} else if operator[len(operator)-1].Typ == types.LBR {
 				operator = operator[:endIndex(operator)]
 			}
@@ -77,7 +77,7 @@ func TokenShuntingAlgorithm(toks []types.Token) ([]types.Token, error) {
 			lastBR := commons.LastIndexOf(toks, func(t types.Token) bool {
 				return t.Typ == types.LBR || t.Typ == types.RBR
 			})
-			return parsed, search_error.New("shunting error, some brackets were not matched together", search_error.MismatchedBrackets, lastBR)
+			return parsed, search_error.New("shunting error, some brackets were not matched together", lastBR)
 		}
 		parsed = append(parsed, opI)
 	}
