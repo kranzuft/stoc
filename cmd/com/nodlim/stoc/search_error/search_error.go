@@ -9,15 +9,15 @@ type SearchError struct {
 	position int
 }
 
-// getPos getter for position in SearchError
-func (err SearchError) getPos() int {
+// GetPos getter for position in SearchError
+func (err SearchError) GetPos() int {
 	return err.position
 }
 
 // PosError custom error with position interface
 type PosError interface {
 	error
-	getPos() int
+	GetPos() int
 }
 
 // New creates a new SearchError based on parameters
