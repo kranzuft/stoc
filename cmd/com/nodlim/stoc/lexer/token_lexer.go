@@ -64,7 +64,7 @@ type Definitions interface {
 	TokToString(t types.TokenType) string
 }
 
-type stateFn func(Definitions, []rune, int) (int, types.Token, stateFn, error)
+type stateFn func(Definitions, []rune, int) (int, types.Token, stateFn, search_error.PosError)
 
 // BooleanAlgebraLexer looks for boolean operations in the search text, and transforms the operations into a token list.
 //
@@ -72,10 +72,10 @@ type stateFn func(Definitions, []rune, int) (int, types.Token, stateFn, error)
 // shows where in the line the exception occurred, with a descriptive message included that states what
 // was expected.
 //
-func BooleanAlgebraLexer(defs Definitions, raw []rune) ([]types.Token, error) {
+func BooleanAlgebraLexer(defs Definitions, raw []rune) ([]types.Token, search_error.PosError) {
 	var tokens []types.Token
 	var token types.Token
-	var err error
+	var err search_error.PosError
 
 	if len(raw) == 0 {
 		return tokens, search_error.New("Empty search text", 0)
@@ -96,7 +96,7 @@ func BooleanAlgebraLexer(defs Definitions, raw []rune) ([]types.Token, error) {
 // lexLeftBracket Lex a left bracket
 //
 // A left bracket can be proceeded by an expression, a left bracket or a not operator
-func lexLeftBracket(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, error) {
+func lexLeftBracket(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, search_error.PosError) {
 	var tok types.Token
 	tok.Typ = types.LBR // we don't need to track that it's a left bracket anymore
 	tok.Exp = string(rawData[index : index+defs.IsLeftBracketI()])
@@ -118,7 +118,7 @@ func lexLeftBracket(defs Definitions, rawData []rune, index int) (int, types.Tok
 // lexRightBracket Lex a right bracket.
 //
 // A right bracket can be proceeded by an operator or a right bracket
-func lexRightBracket(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, error) {
+func lexRightBracket(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, search_error.PosError) {
 	var tok types.Token
 	tok.Typ = types.RBR // we don't need to track that it's a right bracket anymore
 	tok.Exp = string(rawData[index : index+defs.IsRightBracketI()])
@@ -194,7 +194,7 @@ func lexExpressionWithoutQuotes(defs Definitions, rawData []rune, index int) (in
 // Determines if quotes are used and then hands off to lexExpressionWithQuotes or lexExpressionWithoutQuotes
 //
 // Expressions are followed by either operators or right brackets
-func lexExpression(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, error) {
+func lexExpression(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, search_error.PosError) {
 	var tok types.Token
 	tok.Typ = types.EXP
 
@@ -237,7 +237,7 @@ func lexExpression(defs Definitions, rawData []rune, index int) (int, types.Toke
 // getNextFuncAfterOperator finds what function to call based on the last operator processed by the lexer.
 //
 // Operators are followed by expressions or left brackets
-func getNextFuncAfterOperator(defs Definitions, rawData []rune, index int, tok types.Token) (int, types.Token, stateFn, error) {
+func getNextFuncAfterOperator(defs Definitions, rawData []rune, index int, tok types.Token) (int, types.Token, stateFn, search_error.PosError) {
 	index = skipWhitespace(rawData, index)
 	if index < len(rawData) {
 		if defs.IsExpRune(rawData, index) {
@@ -253,7 +253,7 @@ func getNextFuncAfterOperator(defs Definitions, rawData []rune, index int, tok t
 // lexNotSymbolAndCreateTrueToken for not symbols at the front of a condition or after a left bracket, we have to push
 // a TRUE token first to form a valid binary operation. This function passes out that types.TRUE token, before calling
 // the more common not-operator-lexing function lexNotSymbolAndCreateAndNotToken
-func lexNotSymbolAndCreateTrueToken(_ Definitions, _ []rune, index int) (int, types.Token, stateFn, error) {
+func lexNotSymbolAndCreateTrueToken(_ Definitions, _ []rune, index int) (int, types.Token, stateFn, search_error.PosError) {
 	var tok types.Token
 
 	tok.Typ = types.TRUE
@@ -264,7 +264,7 @@ func lexNotSymbolAndCreateTrueToken(_ Definitions, _ []rune, index int) (int, ty
 
 // lexNotSymbolAndCreateAndNotToken Takes a types.NOT and makes it into a types.ANDNOT token type
 // by combining the preceding types.AND token using this function
-func lexNotSymbolAndCreateAndNotToken(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, error) {
+func lexNotSymbolAndCreateAndNotToken(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, search_error.PosError) {
 	var tok types.Token
 
 	tok.Typ = types.ANDNOT
@@ -276,7 +276,7 @@ func lexNotSymbolAndCreateAndNotToken(defs Definitions, rawData []rune, index in
 }
 
 // lexOperator Creates an operator token, and then calls getNextFuncAfterOperator to determine next step
-func lexOperator(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, error) {
+func lexOperator(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, search_error.PosError) {
 	var tok types.Token
 	indexEnd := 0
 
@@ -352,7 +352,7 @@ func determineTokenTypeForOperator(defs Definitions, rawData []rune, index int) 
 // prepareAndReturnError Prints an error when an error occurs in lexing.
 //
 // To be deprecated and replaced with an error with the same level of detail.
-func prepareAndReturnError(defs Definitions, rawData []rune, index int, expected ...types.TokenType) (int, types.Token, stateFn, error) {
+func prepareAndReturnError(defs Definitions, rawData []rune, index int, expected ...types.TokenType) (int, types.Token, stateFn, search_error.PosError) {
 	var found types.TokenType
 	index = skipWhitespace(rawData, index)
 	if (index + 1) < len(rawData) {
@@ -367,7 +367,7 @@ func prepareAndReturnError(defs Definitions, rawData []rune, index int, expected
 }
 
 // returnErrorMessage Builds an error message based on the current context of the lexer
-func returnErrorMessage(_ Definitions, _ []rune, index int, message string) (int, types.Token, stateFn, error) {
+func returnErrorMessage(_ Definitions, _ []rune, index int, message string) (int, types.Token, stateFn, search_error.PosError) {
 	return index, getErrorToken(), nil, search_error.New(message, index)
 }
 
@@ -387,7 +387,7 @@ func skipWhitespace(rawData []rune, index int) int {
 // determineIfExpressionOrLeftBracketOrNot Determines if next is a left bracket, an expression, or a not.
 //
 // Can be considered the entrypoint of the lexer. The types it looks for a valid starting values
-func determineIfExpressionOrLeftBracketOrNot(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, error) {
+func determineIfExpressionOrLeftBracketOrNot(defs Definitions, rawData []rune, index int) (int, types.Token, stateFn, search_error.PosError) {
 	if defs.IsLeftBracket(rawData, index) {
 		return lexLeftBracket(defs, rawData, index)
 	} else if defs.IsExpRune(rawData, index) {

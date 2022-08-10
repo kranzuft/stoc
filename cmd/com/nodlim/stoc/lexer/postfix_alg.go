@@ -38,7 +38,7 @@ import (
 //         -> If the operator token on the top of the stack is a parenthesis, then there are mismatched parentheses.
 //         pop the operator from the operator stack onto the output queue.
 // exit.
-func TokenShuntingAlgorithm(toks []types.Token) ([]types.Token, error) {
+func TokenShuntingAlgorithm(toks []types.Token) ([]types.Token, search_error.PosError) {
 	var parsed []types.Token
 	var operator []types.Token
 	for i, tok := range toks {

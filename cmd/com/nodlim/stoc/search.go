@@ -19,6 +19,7 @@ package stoc
 
 import (
 	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/lexer"
+	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/search_error"
 	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
 )
 
@@ -33,7 +34,7 @@ type PreparedTokens []types.Token
 //
 // Example arguments returning true: "('dog' or 'cat') and not 'frog'"`, "Is it raining cats and dogs?"
 // Example arguments returning false: "('dog' or 'cat') and not 'frog'"`, "It's raining cats, dogs, and even frogs!"
-func SearchString(command string, target string) (bool, error) {
+func SearchString(command string, target string) (bool, search_error.PosError) {
 	return SearchStringCustom(types.DefaultTokensDefinition, command, target)
 }
 
@@ -42,7 +43,7 @@ func SearchString(command string, target string) (bool, error) {
 // The target string has no requirements.
 //
 // The condition must follow the syntax defined by defs arg and match the standard condition grammar.
-func SearchStringCustom(defs types.TokensDefinition, command string, target string) (bool, error) {
+func SearchStringCustom(defs types.TokensDefinition, command string, target string) (bool, search_error.PosError) {
 	preparedTokens, err := LexIntoTokens(defs, command)
 
 	if err == nil {
@@ -58,7 +59,7 @@ func SearchTokens(preparation PreparedTokens, target string) bool {
 }
 
 // LexIntoTokens produces postfix tokens from TokensDefinition and raw tokens-to-be command
-func LexIntoTokens(defs types.TokensDefinition, command string) (PreparedTokens, error) {
+func LexIntoTokens(defs types.TokensDefinition, command string) (PreparedTokens, search_error.PosError) {
 	tokens, errLex := lexer.BooleanAlgebraLexer(defs, []rune(command))
 
 	if errLex == nil {
