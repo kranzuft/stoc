@@ -75,13 +75,10 @@ func main() {
 ## RoadMap
 
 - escaping quotes in expressions
-- using golang error more instead of just printing an error, since this is meant to be a library not an app
-- some way to make strings case-sensitive and case-insensitive, both for the full command and part of it.
-  Probably can do using single and double quotes. quotes would be optional and default to case-insensitive
-  but would add ability to override globally in that case global override would also override double and single quotes
-  to denote case insensitivity in the command
-- the reference app (command line)
-- context support
+- some way to make strings case-sensitive and case-insensitive, likely using a character in front of the expression, similar to python 3's f string
+- the reference app (command line) (WIP, see Frontends)
+- match support (return a list of points where a match was found, for highlighting)
+- context support (include lines before and after a matched line)
 
 ## Potential additions (still considering)
 
