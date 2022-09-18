@@ -1,4 +1,4 @@
-package lofty
+package com_nodlim_stoc
 
 import (
 	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc"

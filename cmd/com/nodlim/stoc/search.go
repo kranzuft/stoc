@@ -18,9 +18,10 @@
 package stoc
 
 import (
-	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/lexer"
-	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/search_error"
-	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
+	"github.com/kranzuft/boolean-algebra-to-tokens/cmd/com/nodlim/batt/lexer"
+	"github.com/kranzuft/boolean-algebra-to-tokens/cmd/com/nodlim/batt/pos_error"
+	"github.com/kranzuft/boolean-algebra-to-tokens/cmd/com/nodlim/batt/types"
+	"strings"
 )
 
 // PreparedTokens tokens that have been pre-prepared and in post-fix notation
@@ -34,7 +35,7 @@ type PreparedTokens []types.Token
 //
 // Example arguments returning true: "('dog' or 'cat') and not 'frog'"`, "Is it raining cats and dogs?"
 // Example arguments returning false: "('dog' or 'cat') and not 'frog'"`, "It's raining cats, dogs, and even frogs!"
-func SearchString(command string, target string) (bool, search_error.PosError) {
+func SearchString(command string, target string) (bool, pos_error.PosError) {
 	return SearchStringCustom(types.DefaultTokensDefinition, command, target)
 }
 
@@ -43,7 +44,7 @@ func SearchString(command string, target string) (bool, search_error.PosError) {
 // The target string has no requirements.
 //
 // The condition must follow the syntax defined by defs arg and match the standard condition grammar.
-func SearchStringCustom(defs types.TokensDefinition, command string, target string) (bool, search_error.PosError) {
+func SearchStringCustom(defs types.TokensDefinition, command string, target string) (bool, pos_error.PosError) {
 	preparedTokens, err := LexIntoTokens(defs, command)
 
 	if err == nil {
@@ -55,11 +56,11 @@ func SearchStringCustom(defs types.TokensDefinition, command string, target stri
 
 // SearchTokens searches target with pre-prepared tokens
 func SearchTokens(preparation PreparedTokens, target string) bool {
-	return lexer.SearchPostfixTokens(preparation, target)
+	return SearchPostfixTokens(preparation, target)
 }
 
 // LexIntoTokens produces postfix tokens from TokensDefinition and raw tokens-to-be command
-func LexIntoTokens(defs types.TokensDefinition, command string) (PreparedTokens, search_error.PosError) {
+func LexIntoTokens(defs types.TokensDefinition, command string) (PreparedTokens, pos_error.PosError) {
 	tokens, errLex := lexer.BooleanAlgebraLexer(defs, []rune(command))
 
 	if errLex == nil {
@@ -73,4 +74,41 @@ func LexIntoTokens(defs types.TokensDefinition, command string) (PreparedTokens,
 	} else {
 		return nil, errLex
 	}
+}
+
+// SearchPostfixTokens takes the postfix formatted tokens and parses the tokens. It uses the tokens to apply conditions on
+// the 'target' string. If the conditions aren't met then
+// Recommended to not be called directly. Instead, call stoc.SearchString or stoc.SearchStringCustom.
+func SearchPostfixTokens(search []types.Token, target string) bool {
+	var stack []bool
+	for _, tok := range search {
+		// action := "Apply op to top of stack"
+		switch tok.Typ {
+		case types.AND:
+			res := stack[len(stack)-2] && stack[len(stack)-1]
+			stack[len(stack)-2] = res
+			stack = stack[:len(stack)-1]
+		case types.OR:
+			res := stack[len(stack)-2] || stack[len(stack)-1]
+			stack[len(stack)-2] = res
+			stack = stack[:len(stack)-1]
+		case types.ANDNOT:
+			res := stack[len(stack)-2] && !stack[len(stack)-1]
+			stack[len(stack)-2] = res
+			stack = stack[:len(stack)-1]
+		case types.ORNOT:
+			res := stack[len(stack)-2] || !stack[len(stack)-1]
+			stack[len(stack)-2] = res
+			stack = stack[:len(stack)-1]
+		default:
+			// action = "Push num onto top of stack"
+			if tok.Typ != types.TRUE {
+				stack = append(stack, strings.Contains(target, tok.Exp))
+			} else {
+				stack = append(stack, true)
+			}
+		}
+	}
+
+	return stack[0]
 }

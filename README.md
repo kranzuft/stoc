@@ -34,47 +34,8 @@ Only dependencies are for unit testing using ginkgo and gomega
   ```foo```
     - simple search is always an option
 
-## Custom Examples
-
-You can use custom types with stoc library. For instance using words instead of symbols:
-
-- ```not { "foo" or 'baa' } and baz```
-- ```foo or "baa or baz"```
-- ```foo and "foo"```
-- ```foo```
-
-this can be configured with the following code snippet:
-
-```go
-package main
-
-import (
-	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc"
-	"github.com/kranzuft/stoc/cmd/com/nodlim/stoc/types"
-)
-
-func main() {
-	def := types.TokensDefinition{}
-	customTypes := def.DefineTokenInfo(types.AND, "and", "and").
-		DefineTokenInfo(types.OR, "or", "or").
-		DefineTokenInfo(types.NOT, "not", "not").
-		DefineTokenInfo(types.ANDNOT, "and not", "and not").
-		DefineTokenInfo(types.ORNOT, "or not", "or not").
-		DefineTokenInfo(types.TRUE, "True", "true").
-		DefineTokenInfo(types.LBR, "{", "left bracket").
-		DefineTokenInfo(types.RBR, "}", "right bracket").
-		DefineTokenInfo(types.EOL, "\n", "end of line").
-		DefineTokenInfo(types.EXP, "", "expression").
-		DefineTokenInfo(types.DQUOTE, "\"", "double inverted comma").
-		DefineTokenInfo(types.SQUOTE, "'", "single inverted comma").
-		Finalise()
-	success, err := stoc.SearchStringCustom(customTypes, "Hello or hi", "Hello world")
-}
-```
-
 ## RoadMap
 
-- escaping quotes in expressions
 - some way to make strings case-sensitive and case-insensitive, likely using a character in front of the expression, similar to python 3's f string
 - the reference app (command line) (WIP, see Frontends)
 - match support (return a list of points where a match was found, for highlighting)
