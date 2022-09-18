@@ -19,21 +19,6 @@ Only dependencies are for unit testing using ginkgo and gomega
 - custom types (see tokens_definition.go ```prepareDefaultTokensDefinition()``` function and 'Custom Examples' section
   below)
 
-## Basic Examples
-
-- should not contain foo or baa, and must have baz
-  ```! ( "foo" | 'baa' ) & baz```
-    - brackets work with unary and binary conditionals
-- The word foo or the phrase "baa or baz"
-  ```foo | "baa | baz"```
-    - keywords can be in expressions using quotes
-- The phrase foo and the phrase foo
-  ```foo & "foo"```
-    - this is clearly redundant and is equivalent to the next example
-- The phrase foo
-  ```foo```
-    - simple search is always an option
-
 ## Custom Examples
 
 You can use custom types with stoc library. For instance using words instead of symbols:
